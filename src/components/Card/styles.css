@@ -1,0 +1,74 @@
+.card {
+  border-radius: var(--x3);
+  padding: var(--x4) var(--x3) var(--x4);
+  height: 360px;
+  box-shadow: var(--box-shadow-main);
+
+  &:hover {
+    box-shadow: var(--box-shadow-main--hover);
+  }
+}
+
+.card-title {
+  margin: 0;
+  margin-bottom: 0.6em;
+  font-weight: 600;
+  color: var(--text-main-color);
+}
+
+.card-image {
+  background-color: var(--image-background-color);
+  display: block;
+  width: 100%;
+  height: 180px;
+  border-radius: var(--x2);
+  object-fit: cover;
+  margin-bottom: var(--x3);
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--x1);
+  margin-bottom: var(--x2);
+}
+
+.card-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--x1);
+}
+
+.card-item {
+  font-size: var(--font-sm);
+  color: var(--text-description-color);
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position-x: 200%;
+  }
+  100% {
+    background-position-x: 0%;
+  }
+}
+
+.card-skeleton {
+  --shimmer-color: #fff;
+
+  animation: skeleton-shimmer 2s ease-out infinite;
+  background: linear-gradient(
+    90deg,
+    var(--image-background-color),
+    var(--image-background-color) 50%,
+    var(--shimmer-color) 60%,
+    var(--image-background-color) 70%
+  );
+
+  background-size: 200% 100%;
+}
+
+.card-text-skeleton {
+  height: var(--x6);
+  border-radius: var(--x2);
+}

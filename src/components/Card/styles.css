@@ -43,32 +43,3 @@
   font-size: var(--font-sm);
   color: var(--text-description-color);
 }
-
-@keyframes skeleton-shimmer {
-  0% {
-    background-position-x: 200%;
-  }
-  100% {
-    background-position-x: 0%;
-  }
-}
-
-.card-skeleton {
-  --shimmer-color: #fff;
-
-  animation: skeleton-shimmer 2s ease-out infinite;
-  background: linear-gradient(
-    90deg,
-    var(--image-background-color),
-    var(--image-background-color) 50%,
-    var(--shimmer-color) 60%,
-    var(--image-background-color) 70%
-  );
-
-  background-size: 200% 100%;
-}
-
-.card-text-skeleton {
-  height: var(--x6);
-  border-radius: var(--x2);
-}

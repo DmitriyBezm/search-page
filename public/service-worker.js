@@ -1,13 +1,12 @@
 /** 
-  Апиха ставит возвращает в ответе заголовок max-cache age-0,
-  поэтому вот так кешируем, чтобы сильно картинки не "мигали" при поиске
+  Апиха возвращает в ответе картинок заголовок max-cache age-0,
+  из-за чего по мере ввода поиска картинки сильно начинают мигать,
+  чтобы картинки повторно не загружались был сделан этот хак
 */
 
 const CACHE_NAME = 'image-cache-v1';
 
-const urlsToCache = [
-  'https://cdn.dummyjson.com/recipe-images',
-];
+const urlsToCache = new Array(50).fill(1).map((_, index) => `https://cdn.dummyjson.com/recipe-images/${index + 1}.webp`)
 
 // 1. Установка Service Worker и кеширование "каркаса" приложения
 self.addEventListener('install', event => {

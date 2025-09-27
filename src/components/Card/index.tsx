@@ -1,4 +1,4 @@
-import React, { type FC, type PropsWithChildren } from "react";
+import React, { memo, type FC, type NamedExoticComponent, type PropsWithChildren, type Ref } from "react";
 
 import { type Recipe } from "../../types";
 import { Tag } from "../Tag";
@@ -6,16 +6,11 @@ import "./styles.css";
 
 type CardProps = {
   recipe: Recipe;
+  ref?: Ref<HTMLDivElement> 
 };
 
-const Image: FC<{ src?: string; loading?: boolean }> = ({ src, loading }) => {
-  const classNames = ["card-image"];
-
-  if (loading) {
-    classNames.push("card-skeleton");
-  }
-
-  const className = classNames.join(" ");
+const Image: FC<{ src?: string; }> = ({ src }) => {
+  const className = "card-image";
 
   if (src) {
     return <img className={className} src={src} />;
@@ -28,25 +23,11 @@ const Wrapper: FC<PropsWithChildren> = ({ children }) => {
   return <div className="card">{children}</div>;
 };
 
-const TextSkeleton: FC<{
-  width: number | string;
-  height?: string | number;
-}> = ({ width, height }) => {
-  return (
-    <div
-      className="card-text-skeleton card-skeleton"
-      style={{ width, height }}
-    />
-  );
-};
-
-type Card = FC<CardProps> & {
-  Img: typeof Image;
+interface CardComponent extends NamedExoticComponent<CardProps> {
   Wrapper: typeof Wrapper;
-  TextSkeleton: typeof TextSkeleton;
 };
 
-export const Card: Card = ({ recipe }) => {
+export const Card = memo(({ recipe }) => {
   return (
     <Wrapper>
       <Image src={recipe.image} />
@@ -71,8 +52,6 @@ export const Card: Card = ({ recipe }) => {
       </ul>
     </Wrapper>
   );
-};
+}) as CardComponent;
 
-Card.Img = Image;
 Card.Wrapper = Wrapper;
-Card.TextSkeleton = TextSkeleton;

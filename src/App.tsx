@@ -1,30 +1,44 @@
-import { type ChangeEvent, useState, useRef, useEffect, type RefObject } from "react";
+import { type ChangeEvent, useState, useRef, useEffect, type RefObject, useLayoutEffect } from "react";
 import "./styles.css";
 import { Api } from "./Api";
-import { type Recipe } from "./types";
 import { Card } from "./components/Card";
-import { Loader } from "./components/Loader";
+import { CardsLoader } from "./components/Card/CardLoader";
 import { CrossIcon } from "./components/icons/CrossIcon";
 import { debounce } from "./utils/debounce";
-
-// TODO
-// Pagination
-// Add CardSkeleton component
+import { MoreButton } from "./components/MoreButton";
+import type { Recipe } from "./types";
 
 const getInititalSearch = () => {
   return new URL(window.location.href).searchParams.get("search") ?? "";
 };
 
+const SKIP_INDEX = 0;
+const STEP_SIZE = 6;
+
 export default function App() {
   const [search, setSearch] = useState(getInititalSearch());
-  const [data, setData] = useState<Recipe[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [skip, setSkip] = useState(SKIP_INDEX);
+  const [total, setTotal] = useState(0);
+
   const controller = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const URLRef = useRef(new URL(window.location.href));
+  const cardRefs = useRef(new Map());
+
+  const handleRef = (id: number, node: HTMLLIElement | null) => {
+    cardRefs.current.set(id, node)
+ 
+    return () => {
+      cardRefs.current.delete(id)
+    }
+  }
 
   const searchRecipes = async (search: string = "") => {
     try {
+      setIsLoading(true);
+
       if (controller.current) {
         controller.current.abort("abort");
         controller.current = null;
@@ -32,15 +46,17 @@ export default function App() {
 
       controller.current = new AbortController();
 
-      setIsLoading(true);
-
       const result = await Api.recipes.getList(
-        search,
+        { search },
         controller.current.signal
       );
 
-      setData(result.recipes);
+      setRecipes(result.recipes);
+      setTotal(result.total);
+
       setIsLoading(false);
+      // reset to default limit on every search change
+      setSkip(SKIP_INDEX);
     } catch (error) {
       if (typeof error === "string" && error === "abort") {
         // if request was aborted won't hide loader
@@ -59,6 +75,33 @@ export default function App() {
       }
     };
   }, []);
+
+  useLayoutEffect(() => {
+    if (skip) {
+      const last = recipes[recipes.length - 1];
+      const cardEl = cardRefs.current.get(last?.id) as HTMLLIElement;
+      if (cardEl) {
+        cardEl.scrollIntoView({ behavior: 'smooth' })
+      }
+    }
+  }, [skip])
+
+  const handleLoadMore = async () => {
+    try {
+      const next = skip + STEP_SIZE;
+
+      const result = await Api.recipes.getList({
+        search,
+        skip: next
+      });
+
+      setRecipes((data) => data.concat(result.recipes));
+      setSkip(next);
+      setTotal(result.total);
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   // use network throttling to check data consistency
   const searchRecipesDebounced = useRef(debounce(300, searchRecipes));
@@ -83,6 +126,7 @@ export default function App() {
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     // dont't trim spaces because we need show all results if there are no search text
     const value = event.target.value;
+    setSkip(SKIP_INDEX);
     setSearch(value);
     searchRecipesDebounced.current(value);
     updateSearchParams(value);
@@ -101,22 +145,27 @@ export default function App() {
             ref={inputRef as RefObject<HTMLInputElement>}
           />
           {search.length > 0 && (
-            <button className="button" type="button" onClick={handleClear}>
+            <button className="icon-button" onClick={handleClear}>
               <CrossIcon />
             </button>
           )}
         </div>
-        {isLoading && <Loader />}
-        {!isLoading && data.length > 0 ? (
-          <ul className="list cards">
-            {data.map((item) => (
-              <li className="list-item" key={item.id}>
-                <Card recipe={item} />
-              </li>
-            ))}
-          </ul>
+        {isLoading && <CardsLoader />}
+        {!isLoading && recipes && recipes?.length > 0 ? (
+          <>
+            <ul className="list cards">
+              {recipes.map((item) => (
+                <li className="list-item" key={item.id} ref={(ref) => handleRef(item.id, ref)}>
+                  <Card recipe={item} />
+                </li>
+              ))}
+            </ul>
+            {!!total && (total > recipes.length) && (
+              <MoreButton onLoad={handleLoadMore} text="Load More" key="more" />
+            )}
+          </>
         ) : null}
-        {!isLoading && search.length !== 0 && data.length === 0 && (
+        {!isLoading && search.length !== 0 && recipes?.length === 0 && (
           <div className="no-data">No recipes found</div>
         )}
       </div>

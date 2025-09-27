@@ -1,10 +1,12 @@
-export type Response<K extends string, T extends Record<string, unknown>> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Response<K extends string, T extends Record<string, any>> = {
   [P in K]: T;
 };
 
 export type ListResponse<
   K extends string,
-  T extends Record<string, unknown>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends Record<string, any>
 > = Response<K, T[]> & {
   total: number;
   skip: number;

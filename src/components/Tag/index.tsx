@@ -1,4 +1,4 @@
-import React, { type FC, type PropsWithChildren } from "react";
+import { type FC, type PropsWithChildren } from "react";
 import "./styles.css";
 
 export const Tag: FC<PropsWithChildren> = ({ children }) => {

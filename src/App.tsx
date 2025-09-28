@@ -21,6 +21,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [skip, setSkip] = useState(SKIP_INDEX);
   const [total, setTotal] = useState(0);
+  const [actualStep, setActualStep] = useState(0);
 
   const controller = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -77,14 +78,18 @@ export default function App() {
   }, []);
 
   useLayoutEffect(() => {
-    if (skip) {
-      const last = recipes[recipes.length - 1];
-      const cardEl = cardRefs.current.get(last?.id) as HTMLLIElement;
-      if (cardEl) {
-        cardEl.scrollIntoView({ behavior: 'smooth' })
+    if (actualStep > 0) {
+      // get last loaded elements for 0 to actualStep
+      const [first] = recipes.slice(-actualStep);
+      console.log('>>> actualStep: ', actualStep, first)
+      if (first) {
+        const cardEl = cardRefs.current.get(first?.id) as HTMLLIElement;
+        if (cardEl) {
+          cardEl.scrollIntoView({ behavior: 'smooth' })
+        }
       }
     }
-  }, [skip])
+  }, [actualStep, recipes])
 
   const handleLoadMore = async () => {
     try {
@@ -98,6 +103,7 @@ export default function App() {
       setRecipes((data) => data.concat(result.recipes));
       setSkip(next);
       setTotal(result.total);
+      setActualStep(result.recipes.length);
     } catch (e) {
       console.error(e)
     }

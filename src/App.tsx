@@ -81,7 +81,6 @@ export default function App() {
     if (actualStep > 0) {
       // get last loaded elements for 0 to actualStep
       const [first] = recipes.slice(-actualStep);
-      console.log('>>> actualStep: ', actualStep, first)
       if (first) {
         const cardEl = cardRefs.current.get(first?.id) as HTMLLIElement;
         if (cardEl) {
